@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat untuk Zakwan</title>
+    <link rel="icon" href="https://api.iconify.design/twemoji:flower-playing-cards.svg" type="image/x-icon">
+
+    <!-- Google Fonts & Lucide Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Indie+Flower&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Indie Flower', cursive !important;
+            background: linear-gradient(135deg, #f092be 0%, #f6a6ca 50%, #f8c1d9 100%);
+            margin: 0;
+            padding: 20px 10px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        ::selection {
+            background: transparent;
+        }
+
+        h4 {
+            font-size: 30px;
+            line-height: 1.1;
+            font-family: 'Amatic SC', cursive !important;
+            margin: 5px 0;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .color1 { color: #002366 !important; }
+        .color2 { color: #16aadb !important; }
+
+        /* ENVELOPE WRAPPER */
+        .envelope-wrapper {
+            position: relative;
+            cursor: pointer;
+            z-index: 10;
+            margin-top: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.03);
+        }
+
+        .envelope {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            background: #f7a3c7;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            perspective: 1000px;
+        }
+
+        .envelope-back {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #e886b4;
+            border-radius: 12px;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 0; height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-top: 125px solid #f9b2d2;
+            transform-origin: top center;
+            transition: transform 0.6s ease-in-out;
+            z-index: 5;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
+        }
+
+        .envelope-wrapper.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 0;
+            border-left: 160px solid #f29ec4;
+            border-right: 160px solid #f29ec4;
+            border-bottom: 120px solid #eb93bd;
+            border-radius: 0 0 12px 12px;
+            z-index: 4;
+        }
+
+        .wax-seal {
+            position: absolute;
+            top: 105px; left: 50%;
+            transform: translateX(-50%);
+            width: 52px; height: 52px;
+            background: radial-gradient(circle, #e63946, #b71c1c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            z-index: 6;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            color: #fff;
+            font-size: 22px;
+        }
+
+        .envelope-wrapper.open .wax-seal {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+            pointer-events: none;
+        }
+
+        .click-hint {
+            margin-top: 25px;
+            background: rgba(255, 255, 255, 0.85);
+            color: #002366;
+            padding: 8px 22px;
+            border-radius: 25px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        /* POP-OUT MODAL BACKDROP */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            padding: 15px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* POP-OUT CARD / LETTER */
+        .letter-popout {
+            width: 360px;
+            max-width: 92vw;
+            max-height: 88vh;
+            background: #fdfbf7;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 0);
+            background-size: 16px 16px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.5) translateY(50px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #f0a6ca;
+        }
+
+        .modal-overlay.active .letter-popout {
+            transform: scale(1) translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: #f092be;
+            border: none;
+            color: white;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: background 0.2s;
+            z-index: 5;
+        }
+
+        .close-btn:hover { background: #e63946; }
+
+        /* GREETING TEXT */
+        .card-text-container {
+            text-align: left;
+            width: 100%;
+            margin-top: 5px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+
+        .card-text-container p {
+            margin: 6px 0;
+        }
+
+        .text-signature {
+            text-align: right !important;
+            font-weight: bold;
+            color: #002366 !important;
+            margin-top: 15px !important;
+            font-size: 20px !important;
+        }
+
+        /* VINYL RECORD & MUSIC PLAYER */
+        .record-container {
+            position: relative;
+            width: 110px; height: 110px;
+            margin: 15px 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vinyl-record {
+            width: 105px; height: 105px;
+            background: radial-gradient(circle, #333 18%, #111 20%, #222 35%, #111 40%, #222 55%, #111 60%, #000 70%);
+            border-radius: 50%;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spin 6s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .vinyl-record.playing { animation-play-state: running; }
+
+        .vinyl-center {
+            width: 36px; height: 36px;
+            background: #f092be;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .vinyl-center::after {
+            content: '';
+            position: absolute;
+            width: 7px; height: 7px;
+            background: #fdfbf7;
+            border-radius: 50%;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* SPOTIFY STYLE PLAYER */
+        .player-card {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid #f0d0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .song-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .song-details { text-align: left; }
+
+        .song-title {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: #002366;
+            margin: 0;
+        }
+
+        .song-artist {
+            font-family: 'Nunito', sans-serif;
+            font-size: 11px;
+            color: #777;
+            margin: 2px 0 0 0;
+        }
+
+        .progress-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .progress-bar-bg {
+            width: 100%; height: 5px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #16aadb, #f092be);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        .time-stamps {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Nunito', sans-serif;
+            font-size: 10px;
+            color: #888;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .control-btn {
+            background: none; border: none;
+            cursor: pointer;
+            color: #002366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, color 0.2s;
+            padding: 4px;
+        }
+
+        .control-btn:hover {
+            color: #16aadb;
+            transform: scale(1.1);
+        }
+
+        .control-btn.play-btn {
+            background: linear-gradient(135deg, #f092be, #16aadb);
+            color: white;
+            border-radius: 50%;
+            width: 36px; height: 36px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        /* BACKGROUND FLOATING PARTICLES */
+        .bg-heart {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+            animation: floatUp 6s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) rotate(0deg) scale(0.8);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SAMPUL SURAT (ENVELOPE) -->
+    <div class="envelope-wrapper" id="envelopeWrapper" onclick="openEnvelope()">
+        <div class="envelope">
+            <div class="envelope-back"></div>
+            <div class="envelope-flap"></div>
+            <div class="envelope-pocket"></div>
+            <div class="wax-seal">💌</div>
+        </div>
+    </div>
+
+    <div class="click-hint">Klik Sampul Surat untuk Buka 🎁</div>
+
+    <!-- POP-OUT SURAT MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="letter-popout">
+            <button class="close-btn" onclick="closeEnvelope(event)" title="Tutup">
+                <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+            </button>
+
+            <h4 class="color1" style="font-size: 32px; margin-bottom: 0;">Happy Birthday</h4>
+            <h4 class="color2" style="margin-top: -8px;">Zakwan ✨</h4>
+
+            <!-- MESEJ UCAPAN TERKINI -->
+            <div class="card-text-container">
+                <p>Happy birthday seika or Mohamad Zakwan... I never thought that I wished your birthday today. N ofc I do remember your birthday, I just want to say that I already forgiven you n I do minta maaf banyak-banyak.. incase it’s hurt you so much.. n this is last i wish your birthday n i would never and ever find you again .. n sumpah demi allah aku ndmau suda apa ni apabani anu mcm bitter sangat bukan bitter ba tapi mcm bermusuhan gitu ( pls jangan kasitau s syerri aku wish birthdaymu ) this is only between us.. begitula kali maksudnya .. ik you wouldn’t reply this but sumpah aku mo cakap happy birthday seja n then i will be vanished from your life jangan risau HAHAHA .. oh ya goodluck yaa belajar sainscomp di UMS ( selamat datang ke dunia gila dan menjadi gila + stress mcm saya hihi ) .. gilagila bangga oo saya sama kau .. tida sangka kau berani ambik kos gila tu kan ?? HAHAHHA .. btw saya buat web ni pakai coding , anu HTML language bahbah nanti minta tutor sak, walaupun noob main ml tapi jago codingnya fuh .. yg pasal aku chat haritu jan salah paham ,aku cuma anu fahamka firasat perempuan? like dia mcm ada something wrong n malamtu aku nd dapat sleep …. okay pasni i wouldn’t kacau lagi hidupmu n jangan lupa jaga solat n jadi baik untuk umi dan abah mu + teruskan jadi baik okay ? orang baik jodohnya pasti baik si... oh ya last i just want to say that i’ll pray that your partner loves your more than i could .. dan semoga tidak bertemu di mana mana ketidaksengajaan lagi .. oh ya HAHAHA klau mau claim hadiah nanti bgitau ja id ml , aku topupkan diamond .. makasi, minta maaf and HAPPY 20TH BIRTHDAYY SEIKAA!!</p>
+                
+                <p class="text-signature">-mayy</p>
+            </div>
+
+            <!-- VINYL RECORD -->
+            <div class="record-container">
+                <div class="vinyl-record" id="vinylRecord">
+                    <div class="vinyl-center">PLAY</div>
+                </div>
+            </div>
+
+            <!-- PEMAIN MUZIK (SPOTIFY PLAYER) -->
+            <div class="player-card">
+                <div class="song-info">
+                    <div class="song-details">
+                        <p class="song-title" id="songTitle">Bergema Sampai Selamanya</p>
+                        <p class="song-artist">Nadhif Basalamah</p>
+                    </div>
+                    <i data-lucide="heart" style="color: #f092be; fill: #f092be; width: 18px; height: 18px;"></i>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar-bg" id="progressBarBg" onclick="seekAudio(event)">
+                        <div class="progress-bar-fill" id="progressBarFill"></div>
+                    </div>
+                    <div class="time-stamps">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+
+                <div class="player-controls">
+                    <button class="control-btn" onclick="prevSong()" title="Previous">
+                        <i data-lucide="skip-back" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    <button class="control-btn play-btn" id="playBtn" onclick="togglePlay()" title="Play/Pause">
+                        <i data-lucide="play" id="playIcon" style="width: 20px; height: 20px; margin-left: 2px;"></i>
+                    </button>
+                    <button class="control-btn" onclick="nextSong()" title="Next">
+                        <i data-lucide="skip-forward" style="width: 18px; height: 18px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO ELEMENT -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="lagu.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const audio = document.getElementById('bgMusic');
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+        const vinyl = document.getElementById('vinylRecord');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const envelopeWrapper = document.getElementById('envelopeWrapper');
+        const modalOverlay = document.getElementById('modalOverlay');
+
+        const playlist = [
+            { title: "Bergema Sampai Selamanya", src: "lagu.mp3" },
+            { title: "Nadhif Basalamah", src: "lagu.mp3" }
+        ];
+        let currentSongIndex = 0;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) lucide.createIcons();
+            createHearts();
+        });
+
+        function openEnvelope() {
+            envelopeWrapper.classList.add('open');
+            setTimeout(() => {
+                modalOverlay.classList.add('active');
+                if (audio.paused) playAudio();
+            }, 400);
+        }
+
+        function closeEnvelope(e) {
+            e.stopPropagation();
+            modalOverlay.classList.remove('active');
+            setTimeout(() => {
+                envelopeWrapper.classList.remove('open');
+            }, 300);
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                vinyl.classList.add('playing');
+                updatePlayIcon(true);
+            }).catch(e => console.log("Autoplay error: ", e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            vinyl.classList.remove('playing');
+            updatePlayIcon(false);
+        }
+
+        function updatePlayIcon(isPlaying) {
+            if (isPlaying) playIcon.setAttribute('data-lucide', 'pause');
+            else playIcon.setAttribute('data-lucide', 'play');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressBarFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+                durationEl.innerText = formatTime(audio.duration);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.innerText = formatTime(audio.duration);
+        });
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function seekAudio(e) {
+            const bg = document.getElementById('progressBarBg');
+            const rect = bg.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            if (audio.duration) {
+                audio.currentTime = (clickX / width) * audio.duration;
+            }
+        }
+
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentSongIndex);
+        }
+
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % playlist.length;
+            loadSong(currentSongIndex);
+        }
+
+        function loadSong(index) {
+            document.getElementById('songTitle').innerText = playlist[index].title;
+            audio.src = playlist[index].src;
+            playAudio();
+        }
+
+        function createHearts() {
+            const symbols = ['💖', '✨', '🌸', '🎂', '💕', '💌'];
+            for (let i = 0; i < 18; i++) {
+                let heart = document.createElement('div');
+                heart.className = 'bg-heart';
+                heart.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+                heart.style.left = Math.random() * 95 + 'vw';
+                heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                heart.style.animationDelay = Math.random() * 5 + 's';
+                heart.style.fontSize = (Math.random() * 14 + 16) + 'px';
+                document.body.appendChild(heart);
+            }
+        }
+    </script>
+</body>
+
+</html>
